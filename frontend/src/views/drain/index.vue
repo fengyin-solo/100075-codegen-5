@@ -18,6 +18,21 @@
       </article>
     </div>
 
+    <div class="view-tabs">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        class="view-tab"
+        :class="{ active: mapStore.tab === tab.key }"
+        type="button"
+        @click="mapStore.setTab(tab.key)"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <DistributionMap v-if="mapStore.tab === 'map'" />
+
     <form class="filter-bar" @submit.prevent="reload">
       <label v-for="field in filterFields" :key="field" class="filter-item">
         <span>{{ field }}</span>
@@ -35,9 +50,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="String(row.id)">
+        <tr
+          v-for="row in rows"
+          :key="String(row.id)"
+          class="ledger-row"
+          :class="{ 'row-selected': mapStore.selectedId !== null && Number(row.id) === mapStore.selectedId }"
+          @click="selectRow(row)"
+        >
           <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
-          <td class="row-actions">
+          <td class="row-actions" @click.stop>
             <button
               v-for="action in actions"
               :key="action"
@@ -66,6 +87,8 @@
 import { onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import { useDrainMapStore } from '@/stores/drainMap'
+import DistributionMap from '@/views/drain/DistributionMap.vue'
 
 type Row = Record<string, string | number | null>
 
@@ -74,12 +97,19 @@ const columns = ["设施编号", "设施类型", "所在道路", "检查井数�
 const actions = ["安排清疏", "确认正常", "停用设施"]
 const statuses = ["待清疏", "正常使用", "堵塞待修", "已停用"]
 const stats = [{"label": "在册排水设施", "value": 0}, {"label": "待清疏设施", "value": 0}, {"label": "堵塞待修", "value": 0}]
+const tabs = [{ label: "台账视图", key: "ledger" }, { label: "分布视图", key: "map" }] as const
+
+const mapStore = useDrainMapStore()
 
 const rows = ref<Row[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
 const filterFields = columns.slice(0, 3)
+
+function selectRow(row: Row) {
+  mapStore.select(Number(row.id))
+}
 
 function resetFilters() {
   filters.value = {}

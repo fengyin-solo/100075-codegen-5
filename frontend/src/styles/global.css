@@ -33,3 +33,9 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .link { border: none; background: none; color: var(--brand); cursor: pointer; padding: 0; }
 .page-foot { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); }
 .error-text { color: #b42318; }
+.view-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.view-tab { border: 1px solid var(--border); background: #fff; border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px; }
+.view-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ledger-row { cursor: pointer; }
+.ledger-row:hover td { background: #f1f5f9; }
+.row-selected td { background: #e8f0fe; }

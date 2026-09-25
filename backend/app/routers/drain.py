@@ -30,6 +30,12 @@ def list_entries(
     return PageResult(items=items, total=total, page=page, size=size)
 
 
+@router.get("/map")
+def map_payload() -> dict[str, Any]:
+    """分布视图数据：按所在道路分组的设施点位、道路走向与每点的缺失说明。"""
+    return service.map_payload()
+
+
 @router.get("/{entry_id}", response_model=dict)
 def get_entry(entry_id: int) -> dict:
     """读取单条排水设施明细；不存在时给出可读的错误说明。"""
@@ -37,6 +43,15 @@ def get_entry(entry_id: int) -> dict:
     if entry is None:
         raise HTTPException(status_code=404, detail=f"排水设施 {entry_id} 不存在或已归档")
     return entry
+
+
+@router.get("/{entry_id}/profile")
+def entry_profile(entry_id: int) -> dict[str, Any]:
+    """单处设施的分布详情：排水管走向、关联诉求记录与缺失说明。"""
+    profile, message = service.entry_profile(entry_id)
+    if profile is None:
+        raise HTTPException(status_code=404, detail=message)
+    return profile
 
 
 @router.post("", response_model=ActionResult)
