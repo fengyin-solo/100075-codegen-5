@@ -30,6 +30,23 @@ def list_entries(
     return PageResult(items=items, total=total, page=page, size=size)
 
 
+@router.get("/map/overview")
+def map_overview(road: str | None = Query(default=None, description="按所在道路过滤")) -> dict[str, Any]:
+    """分布视图：按道路返回排水设施、雨水口、坐标与缺失资料标记。"""
+    return service.map_overview(road=road)
+
+
+@router.get("/map/{kind}/{entry_id}")
+def map_detail(kind: str, entry_id: int) -> dict[str, Any]:
+    """分布视图单点明细：排水管走向与关联诉求记录。"""
+    if kind not in {"facility", "inlet"}:
+        raise HTTPException(status_code=400, detail="点位类型只能是 facility（排水设施）或 inlet（雨水口）")
+    detail = service.map_detail(kind, entry_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail=f"排水点 {kind}/{entry_id} 不存在或已归档")
+    return detail
+
+
 @router.get("/{entry_id}", response_model=dict)
 def get_entry(entry_id: int) -> dict:
     """读取单条排水设施明细；不存在时给出可读的错误说明。"""
